@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>移动和旋转</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            overflow: hidden;
+            cursor: default;
+            /* 默认鼠标 */
+        }
+
+        #letter {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 48px;
+            /* 初始宽度 */
+            height: 48px;
+            /* 初始高度 */
+            transform-origin: center;
+            /* 确保旋转在图片中心 */
+            transition: transform 0.5s ease, left 0.1s ease, top 0.1s ease, width 0.1s ease, height 0.1s ease;
+            /* 平滑过渡 */
+        }
+
+        #image {
+            width: 48px;
+            height: 48px;
+        }
+
+        #custom-cursor {
+            position: absolute;
+            display: none;
+            width: 48px;
+            height: 48px;
+        }
+
+        /* 渐变颜色动画 */
+        @keyframes colorChange {
+            0% {
+                filter: hue-rotate(0deg);
+            }
+
+            50% {
+                filter: hue-rotate(180deg);
+            }
+
+            100% {
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        /* 更加鲜艳的渐变色 */
+        @keyframes fastColorChange {
+            0% {
+                filter: hue-rotate(0deg);
+            }
+
+            100% {
+                filter: hue-rotate(360deg);
+            }
+        }
+
+        /* 爆炸效果 */
+        @keyframes explode {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+                border-radius: 50%;
+            }
+
+            50% {
+                transform: scale(3) rotate(180deg);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(5) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* 全屏爆炸背景 */
+        #explosion {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: red;
+            opacity: 0;
+            z-index: 9999;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            border-radius: 50%;
+            /* 使爆炸效果为圆形 */
+        }
+    </style>
+</head>
+
+<body>
+    <div id="letter">
+        <img src="zhanglang.svg" alt="蟑螂" id="image">
+    </div>
+
+    <img id="custom-cursor" src="renzituo.svg" alt="人字拖">
+    <div id="explosion"></div> <!-- 爆炸背景 -->
+
+    <script>
+        const letter = document.getElementById('letter');
+        const image = document.getElementById('image');
+        const customCursor = document.getElementById('custom-cursor');
+        const explosion = document.getElementById('explosion');
+        let x = window.innerWidth / 2;
+        let y = window.innerHeight / 2;
+        let rotation = 0;
+        let size = 48; // 初始大小
+        let isEnlarging = false;
+        let isPersonSlipper = false; // 判断是否处于人字拖状态
+
+        function updatePosition() {
+            letter.style.left = x + 'px';
+            letter.style.top = y + 'px';
+            letter.style.transform = `rotate(${rotation}deg)`; // 旋转
+            image.style.width = size + 'px';
+            image.style.height = size + 'px';
+
+            // 更新自定义鼠标的大小，使其与图片相同
+            customCursor.style.width = size + 'px';
+            customCursor.style.height = size + 'px';
+        }
+
+        function calculateRotation(previousRotation, newRotation) {
+            const diff = newRotation - previousRotation;
+            if (diff > 180) {
+                return newRotation - 360;
+            } else if (diff < -180) {
+                return newRotation + 360;
+            }
+            return newRotation;
+        }
+
+        function startColorChange() {
+            image.style.animation = 'colorChange 5s infinite linear'; // 初始渐变色动画
+        }
+
+        function startFastColorChange() {
+            image.style.animation = 'fastColorChange 1s infinite linear'; // 快速渐变色动画
+        }
+
+        function changeCursor() {
+            // 如果图片的大小超过屏幕的一半，隐藏鼠标并显示自定义鼠标
+            if (size > window.innerWidth / 2 || size > window.innerHeight / 2) {
+                isPersonSlipper = true; // 设置为人字拖状态
+                document.body.style.cursor = 'none'; // 隐藏鼠标
+                customCursor.style.display = 'block'; // 显示自定义鼠标
+            } else {
+                isPersonSlipper = false; // 取消人字拖状态
+                document.body.style.cursor = 'default'; // 恢复默认鼠标
+                customCursor.style.display = 'none'; // 隐藏自定义鼠标
+            }
+        }
+
+        // 鼠标移动事件：跟踪鼠标位置并更新自定义鼠标的位置
+        document.addEventListener('mousemove', (event) => {
+            if (customCursor.style.display === 'block') {
+                customCursor.style.left = event.pageX - customCursor.offsetWidth / 2 + 'px';
+                customCursor.style.top = event.pageY - customCursor.offsetHeight / 2 + 'px';
+            }
+        });
+
+        // 爆炸效果的点击事件
+        document.addEventListener('click', (event) => {
+            // 只有在人字拖状态下点击才会触发爆炸
+            if (isPersonSlipper) {
+                // 获取点击位置
+                const clickX = event.pageX;
+                const clickY = event.pageY;
+
+                // 显示全屏爆炸效果
+                explosion.style.opacity = 1;
+
+                // 设置爆炸的中心为点击位置
+                explosion.style.left = clickX - explosion.offsetWidth / 2 + 'px';
+                explosion.style.top = clickY - explosion.offsetHeight / 2 + 'px';
+
+                // 添加爆炸动画
+                explosion.style.animation = 'none'; // 先清除动画
+                setTimeout(() => {
+                    explosion.style.animation = 'explode 1s forwards'; // 再加上动画
+                }, 0);
+
+                // 蟑螂消失
+                image.style.opacity = 0;
+
+                // 跳转页面
+                window.location.href = "https://www.ir-wsei.icu";
+            }
+        });
+
+        // 每 100 毫秒检查图片大小
+        const enlargeInterval = setInterval(() => {
+            if (size > window.innerWidth / 2 || size > window.innerHeight / 2) {
+                if (!isEnlarging) {
+                    isEnlarging = true;
+                    x = window.innerWidth / 2; // 移动到屏幕中心
+                    y = window.innerHeight / 2;
+                    startFastColorChange(); // 开启快速变色动画
+                }
+                size += 2; // 增大图片
+            }
+            changeCursor(); // 每次增大时检查是否更改鼠标
+            updatePosition();
+        }, 100);
+
+        // 初始时，图片不变大
+        document.addEventListener('keydown', (event) => {
+            const step = 10;
+            const sizeIncrease = 2; // 每次移动增大尺寸
+            let moveDirection = null;
+            let newRotation = rotation;
+
+            switch (event.key.toLowerCase()) {
+                case 'w':
+                    if (y - step >= 0) y -= step;
+                    moveDirection = 'up';
+                    newRotation = 0;
+                    break;
+                case 'a':
+                    if (x - step >= 0) x -= step;
+                    moveDirection = 'left';
+                    newRotation = -90;
+                    break;
+                case 's':
+                    if (y + size + step <= window.innerHeight) y += step;
+                    moveDirection = 'down';
+                    newRotation = 180;
+                    break;
+                case 'd':
+                    if (x + size + step <= window.innerWidth) x += step;
+                    moveDirection = 'right';
+                    newRotation = 90;
+                    break;
+            }
+
+            // 计算最短路径旋转角度
+            rotation = calculateRotation(rotation, newRotation);
+
+            // 增加尺寸
+            size += sizeIncrease; // 每次移动增大尺寸
+
+            updatePosition();
+        });
+
+        updatePosition();
+    </script>
+</body>
+
+</html>
