@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>移动和旋转</title>
+    <title>蟑螂.广东</title>
     <style>
         body {
             margin: 0;
@@ -105,6 +105,22 @@
             border-radius: 50%;
             /* 使爆炸效果为圆形 */
         }
+
+        #rk_foot {
+            text-align: center;
+            position: fixed;
+            bottom: 0px;
+            z-index: 1000;
+            background-color: rgb(221, 221, 221);
+            background-p_w_upload: scroll;
+            width: 100%;
+            margin: 20px 0px 0px 0px;
+            padding: 0px;
+        }
+
+        #rk_foot>a,span {
+            color: dimgray;
+        }
     </style>
 </head>
 
@@ -115,6 +131,8 @@
 
     <img id="custom-cursor" src="renzituo.svg" alt="人字拖">
     <div id="explosion"></div> <!-- 爆炸背景 -->
+
+    <div id="rk_foot"><a href="https://github.com/sdfwss/cyber_crokroach">关于</a>&nbsp;&nbsp;&nbsp;<span>用WASD来上下移动</span></div>
 
     <script>
         const letter = document.getElementById('letter');
